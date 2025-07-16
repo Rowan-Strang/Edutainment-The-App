@@ -7,12 +7,40 @@
 
 import SwiftUI
 
+struct Answer: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.title)
+            .fontWeight(.bold)
+            .foregroundStyle(.black)
+            .frame(maxWidth: 50)
+            .padding(10)
+            .background(.thinMaterial)
+            .clipShape(.rect(cornerRadius: 20))
+            .padding()
+    }
+}
+
+extension View {
+    func answerStyle() -> some View {
+        modifier(Answer())
+    }
+}
+
+
 struct ContentView: View {
     @State private var selectedNumber = 3
     @State private var questionsToBeAsked = 5
     @State private var showConfig = false
+//    @State private var numbersToQuiz:[Int] = []
     @State private var numbersToQuiz = [4, 3, 5, 8, 9]
     @State private var questionPosition = 0
+    @State private var correctAnswer = 0
+//    @State private var multiChoice: [Int] = []
+    @State private var multiChoice = [12, 18, 7]
+    @State private var answeredCorrectly = 0
+    @State private var answeredIncorrectly = 5
+    @State private var showingEndGame = true
     
     var body: some View {
          NavigationStack {
@@ -38,6 +66,7 @@ struct ContentView: View {
                              .padding(.horizontal, 25)
                          Button("Tap to Play"){
                              createQuestions()
+                             prepareMultichoice()
                              withAnimation(.easeInOut(duration: 0.3)){
                                  showConfig.toggle()
                              }
@@ -55,41 +84,74 @@ struct ContentView: View {
                  }
                  .navigationTitle("Math is Hard")
              }
-                 else {
+                 else if !showingEndGame{
                      VStack {
+                         Spacer()
+                         Text("Wrong: \(answeredIncorrectly)")
+                             .font(.largeTitle.bold())
+                             .foregroundStyle(.black)
+                         Text("Correct: \(answeredCorrectly)")
+                             .font(.largeTitle.bold())
+                             .foregroundStyle(.black)
+                         Spacer()
                          Text("What is \(selectedNumber) x \(numbersToQuiz[questionPosition])?")
                              .font(.title)
                              .fontWeight(.bold)
                              .frame(maxWidth: .infinity)
                              .padding(20)
-                             .background(.ultraThinMaterial)
+                             .background(.thinMaterial)
                              .clipShape(.rect(cornerRadius: 20))
                              .padding(.top, 80)
                              .padding(.horizontal, 40)
-                             .onAppear()
+                         Spacer()
+                         
                          HStack {
-                             Button("Toggle Back"){
-                                 numbersToQuiz = []
-                                 showConfig.toggle()
+                             ForEach(multiChoice, id: \.self) { choice in
+                                 Button("\(choice)"){
+                                     validateAnswer(choice)
+                                 }
+                                 .answerStyle()
                              }
-                             .padding()
-                             Button("Toggle Back"){
-                                 numbersToQuiz = []
-                                 showConfig.toggle()
-                             }
-                             .padding()
                          }
+                         Spacer()
                      }
-            }
+                 } else {
+                     Text(answeredCorrectly > answeredIncorrectly ? "FinalScore" : "You idiot")
+                 }
         }
         }
         
     }
     func createQuestions(){
+        numbersToQuiz = []
         for _ in 1...questionsToBeAsked {
             numbersToQuiz.append(Int.random(in: 1..<40))
 //            print("\(i) \(numbersToQuiz)")
         }
+    }
+    
+    func validateAnswer(_ number: Int){
+        if number == correctAnswer {
+            answeredCorrectly += 1
+        } else {
+            answeredIncorrectly += 1
+        }
+
+        if (questionPosition+1) < questionsToBeAsked {
+            print("moving on")
+            questionPosition += 1
+            prepareMultichoice()
+        } else {
+            print("gameFinished")
+        }
+         
+    }
+    
+    func prepareMultichoice(){
+        correctAnswer = numbersToQuiz[questionPosition]*selectedNumber
+        let dummyOne = correctAnswer - Int.random(in: 1..<10)
+        let dummyTwo = correctAnswer + Int.random(in: 1..<10)
+        multiChoice = [correctAnswer, dummyOne, dummyTwo].shuffled()
     }
 }
 
