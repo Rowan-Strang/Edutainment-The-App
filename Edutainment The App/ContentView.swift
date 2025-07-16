@@ -9,21 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedNumber = 1
+    @State private var questionsToBeAsked = 1
     
     var body: some View {
-        VStack {
-            Section(""){
-                Stepper("\(NumberFormatter.localizedString(from: NSNumber(value: selectedNumber), number: .spellOut).capitalized) Times Tables", value: $selectedNumber, in: 1...10)
-
-                .padding(20)
+        NavigationStack {
+            Form {
+                Section("which and how many"){
+                    Stepper("\(NumberFormatter.localizedString(from: NSNumber(value: selectedNumber), number: .spellOut).capitalized) Times Tables", value: $selectedNumber, in: 1...10)
+                    Stepper("\(NumberFormatter.localizedString(from: NSNumber(value: questionsToBeAsked), number: .spellOut).capitalized) \(questionsToBeAsked == 1 ? "Question" : "Questions")", value: $questionsToBeAsked, in: 1...10)
+                }
             }
-            Spacer()
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world! \(selectedNumber)")
+            .navigationTitle("Math is Hard")
         }
-        .padding()
     }
 }
 
