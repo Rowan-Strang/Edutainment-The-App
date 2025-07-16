@@ -13,7 +13,7 @@ struct Answer: ViewModifier {
             .font(.title)
             .fontWeight(.bold)
             .foregroundStyle(.black)
-            .frame(maxWidth: 50)
+            .frame(maxWidth: 70)
             .padding(10)
             .background(.thinMaterial)
             .clipShape(.rect(cornerRadius: 20))
@@ -29,18 +29,18 @@ extension View {
 
 
 struct ContentView: View {
-    @State private var selectedNumber = 3
+    @State private var selectedNumber = 1
     @State private var questionsToBeAsked = 5
-    @State private var showConfig = false
-//    @State private var numbersToQuiz:[Int] = []
-    @State private var numbersToQuiz = [4, 3, 5, 8, 9]
+    @State private var showConfig = true
+    @State private var numbersToQuiz:[Int] = []
+//    @State private var numbersToQuiz = [4, 3, 5, 8, 9]
     @State private var questionPosition = 0
     @State private var correctAnswer = 0
-//    @State private var multiChoice: [Int] = []
-    @State private var multiChoice = [12, 18, 7]
+    @State private var multiChoice: [Int] = []
+//    @State private var multiChoice = [12, 18, 7]
     @State private var answeredCorrectly = 0
-    @State private var answeredIncorrectly = 5
-    @State private var showingEndGame = true
+    @State private var answeredIncorrectly = 0
+    @State private var showingEndGame = false
     
     var body: some View {
          NavigationStack {
@@ -116,7 +116,32 @@ struct ContentView: View {
                          Spacer()
                      }
                  } else {
-                     Text(answeredCorrectly > answeredIncorrectly ? "FinalScore" : "You idiot")
+                     VStack{
+                         Group{
+                             if answeredCorrectly == questionsToBeAsked {
+                                 Text("Perfect Score!")
+                             } else {
+                                 Text(answeredCorrectly > answeredIncorrectly ? "Well Done!" : "You Idiot")
+                             }
+                         }
+                             .font(.largeTitle.bold())
+                         Text("\(answeredCorrectly) / \(questionsToBeAsked)")
+                             .padding()
+                             .font(.title)
+                         Button("Play Again"){
+                             showConfig = true
+                             showingEndGame = false
+                             answeredCorrectly = 0
+                             answeredIncorrectly = 0
+                             questionsToBeAsked = 5
+                             questionPosition = 0
+                             
+                         }
+                         .padding()
+                         .background()
+                         .clipShape(.rect(cornerRadius: 10))
+                     }
+                         
                  }
         }
         }
@@ -143,6 +168,7 @@ struct ContentView: View {
             prepareMultichoice()
         } else {
             print("gameFinished")
+            showingEndGame = true
         }
          
     }
@@ -152,6 +178,10 @@ struct ContentView: View {
         let dummyOne = correctAnswer - Int.random(in: 1..<10)
         let dummyTwo = correctAnswer + Int.random(in: 1..<10)
         multiChoice = [correctAnswer, dummyOne, dummyTwo].shuffled()
+    }
+    
+    func resetGame(){
+        
     }
 }
 
