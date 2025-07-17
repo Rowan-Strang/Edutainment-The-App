@@ -41,6 +41,7 @@ struct ContentView: View {
     @State private var answeredCorrectly = 0
     @State private var answeredIncorrectly = 0
     @State private var showingEndGame = false
+    @State private var wigglingIndex: Int? = nil
     
     var body: some View {
          NavigationStack {
@@ -67,7 +68,7 @@ struct ContentView: View {
                          Button("Tap to Play"){
                              createQuestions()
                              prepareMultichoice()
-                             withAnimation(.easeInOut(duration: 0.3)){
+                             withAnimation(.spring()){
                                  showConfig.toggle()
                              }
                          }
@@ -75,6 +76,7 @@ struct ContentView: View {
                          .background()
                          .clipShape(.rect(cornerRadius: 10))
                      }
+                     .transition(.scale)
                      .frame(maxWidth: .infinity)
                      .padding(.vertical, 20)
                      .background(.ultraThinMaterial)
@@ -87,12 +89,16 @@ struct ContentView: View {
                  else if !showingEndGame{
                      VStack {
                          Spacer()
-                         Text("Wrong: \(answeredIncorrectly)")
-                             .font(.largeTitle.bold())
-                             .foregroundStyle(.black)
-                         Text("Correct: \(answeredCorrectly)")
-                             .font(.largeTitle.bold())
-                             .foregroundStyle(.black)
+                         
+                         Group {
+                             Text("Wrong: \(answeredIncorrectly)")
+                                 .font(.largeTitle.bold())
+                                 .foregroundStyle(.black)
+                             Text("Correct: \(answeredCorrectly)")
+                                 .font(.largeTitle.bold())
+                                 .foregroundStyle(.black)
+                         }
+                         .transition(.scale)
                          Spacer()
                          ZStack{
                              ForEach([questionPosition], id: \.self) {pos in
@@ -111,14 +117,23 @@ struct ContentView: View {
                          Spacer()
                          HStack {
                              ForEach(Array(multiChoice.enumerated()), id: \.element) { index, choice in
-                                 Button("\(choice)"){
+                                 Button(action: {
+                                     wigglingIndex = index
                                      validateAnswer(choice)
+                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                                         wigglingIndex = nil
+                                     }
+                                 }){
+                                     Text("\(choice)")
+                                         .answerStyle()
+                                         .scaleEffect(wigglingIndex == index ? 1.2 : 1)
+                                         .animation(.spring(duration: 1).repeatCount(1, autoreverses: true), value: wigglingIndex)
                                  }
-                                 .answerStyle()
                              }
                          }
                          Spacer()
                      }
+                     .transition(.scale)
                  } else {
                      VStack{
                          Group{
@@ -129,25 +144,28 @@ struct ContentView: View {
                              }
                          }
                              .font(.largeTitle.bold())
+                             
                          Text("\(answeredCorrectly) / \(questionsToBeAsked)")
                              .padding()
                              .font(.title)
                          Button("Play Again"){
-                             showConfig = true
-                             showingEndGame = false
+                             withAnimation(.spring()){
+                                 showConfig = true
+                                 showingEndGame = false
+                             }
                              answeredCorrectly = 0
                              answeredIncorrectly = 0
                              questionsToBeAsked = 5
                              questionPosition = 0
-                             
                          }
                          .padding()
                          .background()
                          .clipShape(.rect(cornerRadius: 10))
                      }
-                         
+                     .transition(.scale)
                  }
         }
+             .animation(.spring(), value: showConfig)
         }
         
     }
@@ -168,11 +186,15 @@ struct ContentView: View {
 
         if (questionPosition+1) < questionsToBeAsked {
             print("moving on")
-            questionPosition += 1
+            withAnimation(.spring()){
+                questionPosition += 1
+            }
             prepareMultichoice()
         } else {
             print("gameFinished")
-            showingEndGame = true
+            withAnimation(.spring()){
+                showingEndGame = true
+            }
         }
          
     }
