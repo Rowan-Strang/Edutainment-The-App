@@ -31,13 +31,13 @@ extension View {
 struct ContentView: View {
     @State private var selectedNumber = 1
     @State private var questionsToBeAsked = 5
-    @State private var showConfig = true
-    @State private var numbersToQuiz:[Int] = []
-//    @State private var numbersToQuiz = [4, 3, 5, 8, 9]
+    @State private var showConfig = false
+//    @State private var numbersToQuiz:[Int] = []
+    @State private var numbersToQuiz = [4, 3, 5, 8, 9]
     @State private var questionPosition = 0
     @State private var correctAnswer = 0
-    @State private var multiChoice: [Int] = []
-//    @State private var multiChoice = [12, 18, 7]
+//    @State private var multiChoice: [Int] = []
+    @State private var multiChoice = [12, 18, 7]
     @State private var answeredCorrectly = 0
     @State private var answeredIncorrectly = 0
     @State private var showingEndGame = false
@@ -94,19 +94,23 @@ struct ContentView: View {
                              .font(.largeTitle.bold())
                              .foregroundStyle(.black)
                          Spacer()
-                         Text("What is \(selectedNumber) x \(numbersToQuiz[questionPosition])?")
-                             .font(.title)
-                             .fontWeight(.bold)
-                             .frame(maxWidth: .infinity)
-                             .padding(20)
-                             .background(.thinMaterial)
-                             .clipShape(.rect(cornerRadius: 20))
-                             .padding(.top, 80)
-                             .padding(.horizontal, 40)
+                         ZStack{
+                             ForEach([questionPosition], id: \.self) {pos in
+                                 Text("What is \(selectedNumber) x \(numbersToQuiz[questionPosition])?")
+                                     .font(.title).bold()
+                                     .frame(maxWidth: .infinity)
+                                     .padding(20)
+                                     .background(.thinMaterial)
+                                     .clipShape(.rect(cornerRadius: 20))
+                                     .transition(.scale)
+                             }
+                         }
+                         .animation(.spring(), value: questionPosition)
+                         .padding(.top, 80)
+                         .padding(.horizontal, 40)
                          Spacer()
-                         
                          HStack {
-                             ForEach(multiChoice, id: \.self) { choice in
+                             ForEach(Array(multiChoice.enumerated()), id: \.element) { index, choice in
                                  Button("\(choice)"){
                                      validateAnswer(choice)
                                  }
